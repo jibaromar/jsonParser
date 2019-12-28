@@ -10,4 +10,4 @@ void main(){
     cc->a=5;
     printf("%d\n", cc->a);
 
-}
+}//test
