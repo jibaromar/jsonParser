@@ -1,8 +1,0 @@
-
-
-get key_value (get key + get key_value(get key + get key_value))
-
-
-do{
-    get key_value(c);
-}while( c == ',');
