@@ -3,13 +3,16 @@
 #include <assert.h>
 #include <string.h>
 
+//Macros
+#define JSON_FILE_PATH "DATA/file.json"
+
 //Data structurs
-typedef enum boolean {
+typedef enum bool {
 
     false,
     true
 
-} boolean;
+} bool;
 
 typedef enum value_type {
 
@@ -17,7 +20,7 @@ typedef enum value_type {
     string,
     integer,
     decimal,
-    bool,
+    boolean,
     list,
     jsonObj
 
@@ -38,7 +41,7 @@ typedef struct json {
 
 typedef struct {
     char *number;
-    boolean isDecimal;
+    bool isDecimal;
 } parsed_number;
 
 //Prototypes
@@ -48,9 +51,10 @@ void add_tabs(unsigned n);
 void print_json(const json *json_parsed, unsigned level);
 parsed_number *get_number(FILE *file, char c);
 
+//Main Program
 int main(void){
     
-    FILE *file = fopen("DATA/test.json", "r");
+    FILE *file = fopen(JSON_FILE_PATH, "r");
     assert(file != NULL);
 
     json *json_parsed;
@@ -67,6 +71,7 @@ int main(void){
     return 0;
 }
 
+//Functions
 json *get_json_parts(FILE *file){
     char c;
     unsigned short char_counter = 0;
@@ -189,9 +194,9 @@ json *get_json_parts(FILE *file){
                                 partial_json->json_key_values[partial_json->number_of_json_key_values-1].value = NULL;
                             }
                             else if(strncmp("true", word, 4) == 0){
-                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].type = bool;
-                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].value = (boolean*) malloc(sizeof(boolean));
-                                *((boolean*)partial_json->json_key_values[partial_json->number_of_json_key_values-1].value) = true;
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].type = boolean;
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].value = (bool*) malloc(sizeof(bool));
+                                *((bool*)partial_json->json_key_values[partial_json->number_of_json_key_values-1].value) = true;
                             }
                             else{
                                 printf(".......File syntax error......\n");
@@ -206,9 +211,9 @@ json *get_json_parts(FILE *file){
                                 c = fgetc(file); 
                             }
                             if(strncmp("false", word, 5) == 0){
-                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].type = bool;
-                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].value = (boolean*) malloc(sizeof(boolean));
-                                *((boolean*)partial_json->json_key_values[partial_json->number_of_json_key_values-1].value) = false;
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].type = boolean;
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].value = (bool*) malloc(sizeof(bool));
+                                *((bool*)partial_json->json_key_values[partial_json->number_of_json_key_values-1].value) = false;
                             }
                             else{
                                 printf(".......File syntax error......\n");
@@ -222,7 +227,9 @@ json *get_json_parts(FILE *file){
                             return partial_json;
                         } 
                     }
-                    //else if (c == '[');
+                    // else if (c == '['){
+
+                    // }
                 }while(c == ',');
             }
         }while(c == ',');
@@ -274,6 +281,7 @@ parsed_number *get_number(FILE *file, char c){
     return number;
 }
 
+//Procedures
 void add_tabs(unsigned n){
     for(size_t i = 0 ; i < n ; i++){
         putc('\t',stdout);
@@ -290,7 +298,7 @@ void print_json(const json *json_parsed, unsigned level){
             case string : add_tabs(level);printf("\t\"%s\" : \"%s\",\n", json_parsed->json_key_values[i].key, json_parsed->json_key_values[i].value);break;
             case integer : add_tabs(level);printf("\t\"%s\" : %d,\n", json_parsed->json_key_values[i].key, *(long*)json_parsed->json_key_values[i].value);break;
             case decimal : add_tabs(level);printf("\t\"%s\" : %f,\n", json_parsed->json_key_values[i].key, *(double*)json_parsed->json_key_values[i].value);break;
-            case bool : add_tabs(level);printf("\t\"%s\" : %s,\n", json_parsed->json_key_values[i].key, *((boolean*)json_parsed->json_key_values[i].value)?"true":"false");break;
+            case boolean : add_tabs(level);printf("\t\"%s\" : %s,\n", json_parsed->json_key_values[i].key, *((bool*)json_parsed->json_key_values[i].value)?"true":"false");break;
             case jsonObj : add_tabs(level);printf("\t\"%s\" : ",json_parsed->json_key_values[i].key);print_json(json_parsed->json_key_values[i].value, level+1);break;
             default : printf("......Printing error......");break;
         }
