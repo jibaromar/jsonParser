@@ -176,6 +176,52 @@ json *get_json_parts(FILE *file){
                             return partial_json;
                         } 
                     }
+                    else if(c == 'n' || c == 't' || c == 'f'){
+                        if(c == 'n' || c == 't'){
+                            char word[4];
+                            for(size_t i = 0 ; i < 4 ; i++){
+                                assert(c == 'n' || c == 'u' || c == 'l' || c == 't' || c == 'r' || c == 'e');
+                                word[i] = c;
+                                c = fgetc(file); 
+                            }
+                            if(strncmp("null", word, 4) == 0){
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].type = null;
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].value = NULL;
+                            }
+                            else if(strncmp("true", word, 4) == 0){
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].type = bool;
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].value = (boolean*) malloc(sizeof(boolean));
+                                *((boolean*)partial_json->json_key_values[partial_json->number_of_json_key_values-1].value) = true;
+                            }
+                            else{
+                                printf(".......File syntax error......\n");
+                            }
+                            
+                        }
+                        else if(c == 'f'){
+                            char word[5];
+                            for(size_t i = 0 ; i < 5 ; i++){
+                                assert(c == 'f' || c == 'a' || c == 'l' || c == 's' || c == 'e');
+                                word[i] = c;
+                                c = fgetc(file); 
+                            }
+                            if(strncmp("false", word, 5) == 0){
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].type = bool;
+                                partial_json->json_key_values[partial_json->number_of_json_key_values-1].value = (boolean*) malloc(sizeof(boolean));
+                                *((boolean*)partial_json->json_key_values[partial_json->number_of_json_key_values-1].value) = false;
+                            }
+                            else{
+                                printf(".......File syntax error......\n");
+                            }
+                        }
+
+                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        assert(c != EOF);
+
+                        if(c == '}'){
+                            return partial_json;
+                        } 
+                    }
                     //else if (c == '[');
                 }while(c == ',');
             }
@@ -240,16 +286,15 @@ void print_json(const json *json_parsed, unsigned level){
     printf("{\n");
     for(i = 0 ; i < json_parsed->number_of_json_key_values ; i++){
         switch(json_parsed->json_key_values[i].type){
+            case null : add_tabs(level);printf("\t\"%s\" : null,\n", json_parsed->json_key_values[i].key);break;
             case string : add_tabs(level);printf("\t\"%s\" : \"%s\",\n", json_parsed->json_key_values[i].key, json_parsed->json_key_values[i].value);break;
             case integer : add_tabs(level);printf("\t\"%s\" : %d,\n", json_parsed->json_key_values[i].key, *(long*)json_parsed->json_key_values[i].value);break;
             case decimal : add_tabs(level);printf("\t\"%s\" : %f,\n", json_parsed->json_key_values[i].key, *(double*)json_parsed->json_key_values[i].value);break;
+            case bool : add_tabs(level);printf("\t\"%s\" : %s,\n", json_parsed->json_key_values[i].key, *((boolean*)json_parsed->json_key_values[i].value)?"true":"false");break;
             case jsonObj : add_tabs(level);printf("\t\"%s\" : ",json_parsed->json_key_values[i].key);print_json(json_parsed->json_key_values[i].value, level+1);break;
             default : printf("......Printing error......");break;
         }
     }
-    //putc('\n', stdout);
     add_tabs(level);
     printf("},\n");
 }
-
-//comment
