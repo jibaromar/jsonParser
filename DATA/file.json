@@ -5,7 +5,7 @@
             "title": 20,
 			"GlossList": {
                 "GlossEntry": {
-                    "ID": "SGML",
+                    "ID": false,
 					"SortAs": -24.655,
 					"GlossTerm": "Standard Generalized Markup Language",
 					"Acronym": true,
@@ -14,7 +14,7 @@
                         "para": "A meta-markup language, used to create markup languages such as DocBook.",
 						"GlossSeeAlso": ["GML", "OMARUUUU"]
                     },
-					"GlossSee": "markup"
+					"GlossSee": null
                 }
             }
         }

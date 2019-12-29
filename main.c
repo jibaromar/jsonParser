@@ -6,6 +6,13 @@
 //Macros
 #define JSON_FILE_PATH "DATA/file.json"
 
+//Color Macros
+#define BLEU_COLOR "\033[1;34m"
+#define YELLOW_COLOR "\033[1;33m"
+#define GREEN_COLOR "\033[1;32m"
+#define RED_COLOR "\033[1;31m"
+#define WHITE_COLOR "\033[00m"
+
 //Data structurs
 typedef enum {
 
@@ -57,11 +64,13 @@ typedef struct {
     bool isDecimal;
 } parsed_number;
 
-//Prototypes
+//  Prototypes
 json *get_json_parts(FILE *file);
 list *get_list_parts(FILE *file);
 char *get_string(FILE *file, char c);
 parsed_number *get_number(FILE *file, char c);
+
+//Printing prototypes
 void add_tabs(unsigned n);
 void print_json(const json *json_parsed, unsigned level);
 void print_list(const list *list_parsed, unsigned level);
@@ -477,13 +486,13 @@ void print_json(const json *json_parsed, unsigned level){
     printf("{\n");
     for(i = 0 ; i < json_parsed->number_of_json_key_values ; i++){
         switch(json_parsed->json_key_values[i].value.type){
-            case null : add_tabs(level);printf("\t\"%s\" : null,\n", json_parsed->json_key_values[i].key);break;
-            case string : add_tabs(level);printf("\t\"%s\" : \"%s\",\n", json_parsed->json_key_values[i].key, json_parsed->json_key_values[i].value.value);break;
-            case integer : add_tabs(level);printf("\t\"%s\" : %d,\n", json_parsed->json_key_values[i].key, *(long*)json_parsed->json_key_values[i].value.value);break;
-            case decimal : add_tabs(level);printf("\t\"%s\" : %f,\n", json_parsed->json_key_values[i].key, *(double*)json_parsed->json_key_values[i].value.value);break;
-            case boolean : add_tabs(level);printf("\t\"%s\" : %s,\n", json_parsed->json_key_values[i].key, *((bool*)json_parsed->json_key_values[i].value.value)?"true":"false");break;
-            case jsonList : add_tabs(level);printf("\t\"%s\" : ",json_parsed->json_key_values[i].key);print_list(json_parsed->json_key_values[i].value.value, level+1);break;
-            case jsonObj : add_tabs(level);printf("\t\"%s\" : ",json_parsed->json_key_values[i].key);print_json(json_parsed->json_key_values[i].value.value, level+1);break;
+            case null : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : "RED_COLOR"null"WHITE_COLOR",\n", json_parsed->json_key_values[i].key);break;
+            case string : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : "YELLOW_COLOR"\"%s\""WHITE_COLOR",\n", json_parsed->json_key_values[i].key, json_parsed->json_key_values[i].value.value);break;
+            case integer : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : "GREEN_COLOR"%d"WHITE_COLOR",\n", json_parsed->json_key_values[i].key, *(long*)json_parsed->json_key_values[i].value.value);break;
+            case decimal : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : "GREEN_COLOR"%f"WHITE_COLOR",\n", json_parsed->json_key_values[i].key, *(double*)json_parsed->json_key_values[i].value.value);break;
+            case boolean : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : \033[0;31m%s\033[00m,\n", json_parsed->json_key_values[i].key, *((bool*)json_parsed->json_key_values[i].value.value)?GREEN_COLOR"true":RED_COLOR"false");break;
+            case jsonList : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : ",json_parsed->json_key_values[i].key);print_list(json_parsed->json_key_values[i].value.value, level+1);break;
+            case jsonObj : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : ",json_parsed->json_key_values[i].key);print_json(json_parsed->json_key_values[i].value.value, level+1);break;
             default : printf("......Printing error......");break;
         }
     }
@@ -497,11 +506,11 @@ void print_list(const list *list_parsed, unsigned level){
     printf("[\n");
     for(i = 0 ; i < list_parsed->number_of_list_key_values ; i++){
         switch(list_parsed->value[i].type){
-            case null : add_tabs(level);printf("\tnull,\n");break;
-            case string : add_tabs(level);printf("\t\"%s\",\n", list_parsed->value[i].value);break;
-            case integer : add_tabs(level);printf("\t%d,\n", *(long*)list_parsed->value[i].value);break;
-            case decimal : add_tabs(level);printf("\t%f,\n", *(double*)list_parsed->value[i].value);break;
-            case boolean : add_tabs(level);printf("\t%s,\n", *((bool*)list_parsed->value[i].value)?"true":"false");break;
+            case null : add_tabs(level);printf("\t"RED_COLOR"null"WHITE_COLOR",\n");break;
+            case string : add_tabs(level);printf("\t"YELLOW_COLOR"\"%s\""WHITE_COLOR",\n", list_parsed->value[i].value);break;
+            case integer : add_tabs(level);printf("\t"GREEN_COLOR"%d"WHITE_COLOR",\n", *(long*)list_parsed->value[i].value);break;
+            case decimal : add_tabs(level);printf("\t"GREEN_COLOR"%f"WHITE_COLOR",\n", *(double*)list_parsed->value[i].value);break;
+            case boolean : add_tabs(level);printf("\t%s,\n", *((bool*)list_parsed->value[i].value)?GREEN_COLOR"true":RED_COLOR"false");break;
             case jsonList : add_tabs(level);print_list(list_parsed->value[i].value, level+1);break;
             case jsonObj : add_tabs(level);print_json(list_parsed->value[i].value, level+1);break;
             default : printf("......Printing error......");break;
