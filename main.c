@@ -120,9 +120,10 @@ json *get_json_parts(FILE *file){
                 do{
                     key_value *p;
                     partial_json->number_of_json_key_values++;
-                    p = (key_value *) realloc((key_value *)partial_json->json_key_values, (unsigned long)partial_json->number_of_json_key_values * sizeof(key_value));
-                    //p = (key_value *) realloc(partial_json->json_key_values, 45 * sizeof(key_value));
+
+                    p = (key_value *) malloc(partial_json->number_of_json_key_values * sizeof(key_value));
                     if(p){
+                        memcpy(p, partial_json->json_key_values, (partial_json->number_of_json_key_values-1) * sizeof(key_value));
                         partial_json->json_key_values = p;
                     }
                     else{
@@ -140,7 +141,6 @@ json *get_json_parts(FILE *file){
 
                     partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key = (char*) malloc(sizeof(char));
                     strcpy(partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key, get_string(file, c));
-                    printf("Key = %s\n", partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key);
                     c = fgetc(file);
                     while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
                     assert(c == ':');
