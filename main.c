@@ -7,11 +7,21 @@
 #define JSON_FILE_PATH "DATA/file.json"
 
 //Color Macros
+#ifdef __unix
 #define BLEU_COLOR "\033[1;34m"
 #define YELLOW_COLOR "\033[1;33m"
 #define GREEN_COLOR "\033[1;32m"
 #define RED_COLOR "\033[1;31m"
 #define WHITE_COLOR "\033[00m"
+#endif
+
+#ifndef __unix
+#define BLEU_COLOR ""
+#define YELLOW_COLOR ""
+#define GREEN_COLOR ""
+#define RED_COLOR ""
+#define WHITE_COLOR ""
+#endif
 
 //Data structurs
 typedef enum {
@@ -98,9 +108,7 @@ int main(void){
 //Functions
 json *get_json_parts(FILE *file){
     char c;
-    unsigned short char_counter = 0;
     json *partial_json;
-    key_value *p;
 
     partial_json = (json*) malloc(sizeof(json));
     partial_json->number_of_json_key_values = 0;
@@ -110,8 +118,10 @@ json *get_json_parts(FILE *file){
             if (c == '{')
             {
                 do{
+                    key_value *p;
                     partial_json->number_of_json_key_values++;
-                    p = (key_value *) realloc(partial_json->json_key_values, partial_json->number_of_json_key_values * sizeof(key_value));
+                    p = (key_value *) realloc((key_value *)partial_json->json_key_values, (unsigned long)partial_json->number_of_json_key_values * sizeof(key_value));
+                    //p = (key_value *) realloc(partial_json->json_key_values, 45 * sizeof(key_value));
                     if(p){
                         partial_json->json_key_values = p;
                     }
@@ -130,6 +140,7 @@ json *get_json_parts(FILE *file){
 
                     partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key = (char*) malloc(sizeof(char));
                     strcpy(partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key, get_string(file, c));
+                    printf("Key = %s\n", partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key);
                     c = fgetc(file);
                     while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
                     assert(c == ':');
@@ -165,7 +176,7 @@ json *get_json_parts(FILE *file){
                         c = fgetc(file);
                         while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
                     }
-                    else if( c == '-' || (c >= '0' && c <= '9')){
+                    else if( c == '-' || (c >= '0' && c <= '9') ){
                         parsed_number *number = (parsed_number*) malloc(sizeof(parsed_number));
 
                         if(c == '-'){
