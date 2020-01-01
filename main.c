@@ -74,14 +74,21 @@ typedef struct {
     bool isDecimal;
 } parsed_number;
 
+typedef struct {
+    char *key;
+    unsigned long numberOfValues;
+} statistics_key_nbrValue;
+
 //  Prototypes
 json *get_json_parts(FILE *file);
 list *get_list_parts(FILE *file);
 char *get_string(FILE *file, char c);
 parsed_number *get_number(FILE *file, char c);
+void statistics_on_jsonObj(json * parsed_json_part);
+void check_for_jsonObj(list * parsed_list_part);
 
 //Printing prototypes
-void add_tabs(int n);
+void add_tabs(const int n);
 void print_json(const json *json_parsed, int level);
 void print_list(const list *list_parsed, int level);
 
@@ -98,6 +105,10 @@ int main(void){
     json_parsed = get_json_parts(file);
 
     print_json(json_parsed, 0);
+
+    puts("\n======================Statistics======================");
+
+    statistics_on_jsonObj(json_parsed);
 
     free(json_parsed);
     fclose(file);
@@ -495,6 +506,38 @@ parsed_number *get_number(FILE *file, char c){
 }
 
 //Procedures
+void statistics_on_jsonObj(json * parsed_json_part){
+    size_t i = 0;
+    key_value * my_key_value = NULL;
+    for(i = 0 ; i < parsed_json_part->number_of_json_key_values ; i++){
+        my_key_value = &parsed_json_part->json_key_values[i];
+        if(my_key_value->value.type == jsonObj){
+            statistics_on_jsonObj(my_key_value->value.value);
+        }
+        else if(my_key_value->value.type == jsonList){
+            list * myList = (list *)(my_key_value->value.value);
+            check_for_jsonObj(myList);
+            unsigned long number_of_elements = myList->number_of_list_key_values;
+            printf("In \"%s\" there %s "GREEN_COLOR"%d"WHITE_COLOR" %s%c\n", my_key_value->key, number_of_elements > 1u?"are":"is", number_of_elements, my_key_value->key, number_of_elements > 1u?'s':'\0');
+        }
+    }
+}
+
+void check_for_jsonObj(list * parsed_list_part){
+    size_t i = 0;
+    type_value * my_value = &parsed_list_part->value[i];
+    for(i = 0 ; i < parsed_list_part->number_of_list_key_values ; i++){
+        if(my_value->type == jsonObj){
+            statistics_on_jsonObj(my_value->value);
+        }
+        else if(my_value->type == jsonList){
+            list * myList = (list *)(my_value->value);
+            check_for_jsonObj(myList);
+        }
+    }
+}
+
+
 void add_tabs(int n){
     for(size_t i = 0 ; i < n ; i++){
         putc('\t',stdout);
@@ -503,8 +546,6 @@ void add_tabs(int n){
 
 void print_json(const json *json_parsed, int level){
     size_t i = 0;
-    // puts("");
-    // add_tabs(level);
     printf("{\n");
     for(i = 0 ; i < json_parsed->number_of_json_key_values ; i++){
         if(json_parsed->json_key_values[i].key == NULL){
@@ -534,8 +575,6 @@ void print_json(const json *json_parsed, int level){
 
 void print_list(const list *list_parsed, int level){
     size_t i = 0;
-    // puts("");
-    // add_tabs(level);
     printf("[\n");
     for(i = 0 ; i < list_parsed->number_of_list_key_values ; i++){
         switch(list_parsed->value[i].type){
