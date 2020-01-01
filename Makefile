@@ -1,4 +1,7 @@
+.PHONY: clean
+
 prog: main.c
 	gcc main.c -o prog
-test: test.c
-	gcc test.c -o test
+
+clean: 
+	rm -f main prog

@@ -81,9 +81,9 @@ char *get_string(FILE *file, char c);
 parsed_number *get_number(FILE *file, char c);
 
 //Printing prototypes
-void add_tabs(unsigned n);
-void print_json(const json *json_parsed, unsigned level);
-void print_list(const list *list_parsed, unsigned level);
+void add_tabs(int n);
+void print_json(const json *json_parsed, int level);
+void print_list(const list *list_parsed, int level);
 
 //Main Program
 int main(void){
@@ -92,7 +92,6 @@ int main(void){
     assert(file != NULL);
 
     json *json_parsed;
-    char c = 0;
     
     json_parsed = (json*) malloc(sizeof(json));
 
@@ -113,7 +112,7 @@ json *get_json_parts(FILE *file){
     partial_json = (json*) malloc(sizeof(json));
     partial_json->number_of_json_key_values = 0;
         c = fgetc(file);
-        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
         do{
             if (c == '{')
             {
@@ -132,7 +131,13 @@ json *get_json_parts(FILE *file){
                     }
 
                     c = fgetc(file);
-                    while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                    while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
+                    if(c == '}'){
+                        partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key = NULL;
+                        partial_json->json_key_values[partial_json->number_of_json_key_values-1].value.type = null;
+                        partial_json->json_key_values[partial_json->number_of_json_key_values-1].value.value = NULL;
+                        return partial_json;
+                    }
                     assert(c != EOF);
                     assert(c == '\"');
 
@@ -142,11 +147,11 @@ json *get_json_parts(FILE *file){
                     partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key = (char*) malloc(sizeof(char));
                     strcpy(partial_json->json_key_values[(partial_json->number_of_json_key_values)-1].key, get_string(file, c));
                     c = fgetc(file);
-                    while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                    while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                     assert(c == ':');
 
                     c = fgetc(file);
-                    while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                    while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                     assert(c != EOF);
                     assert(c != ',');
 
@@ -159,7 +164,7 @@ json *get_json_parts(FILE *file){
                         strcpy(partial_json->json_key_values[partial_json->number_of_json_key_values-1].value.value, get_string(file,c));
                         
                         c = fgetc(file);
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                         assert(c != EOF);
 
                         if(c == '}'){
@@ -174,7 +179,7 @@ json *get_json_parts(FILE *file){
                         partial_json->json_key_values[partial_json->number_of_json_key_values-1].value.value = (json*) get_json_parts(file);
                         
                         c = fgetc(file);
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                     }
                     else if( c == '-' || (c >= '0' && c <= '9') ){
                         parsed_number *number = (parsed_number*) malloc(sizeof(parsed_number));
@@ -210,7 +215,7 @@ json *get_json_parts(FILE *file){
                         }
 
                         c = fgetc(file);
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                         assert(c != EOF);
 
                         if(c == '}'){
@@ -256,7 +261,7 @@ json *get_json_parts(FILE *file){
                             }
                         }
 
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                         assert(c != EOF);
 
                         if(c == '}'){
@@ -271,7 +276,7 @@ json *get_json_parts(FILE *file){
                         partial_json->json_key_values[partial_json->number_of_json_key_values-1].value.value = (list*) get_list_parts(file);
                         
                         c = fgetc(file);
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                     }
                 }while(c == ',');
             }
@@ -288,7 +293,7 @@ list *get_list_parts(FILE *file){
     partial_list = (list*) malloc(sizeof(list));
     partial_list->number_of_list_key_values = 0;
         c = fgetc(file);
-        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
         do{
             if (c == '[')
             {
@@ -304,11 +309,16 @@ list *get_list_parts(FILE *file){
                     }
 
                     c = fgetc(file);
-                    while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                    while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                     assert(c != EOF);
                     assert(c != ',');
 
-                    
+                    if(c == ']'){
+                        partial_list->value[partial_list->number_of_list_key_values-1].type = null;
+                        partial_list->value[partial_list->number_of_list_key_values-1].value = NULL;
+                        return partial_list;
+                    }
+
                     if( c == '\"'){
                         partial_list->value[partial_list->number_of_list_key_values-1].type = string;
                         partial_list->value[partial_list->number_of_list_key_values-1].value = (char*) malloc(sizeof(char));
@@ -317,7 +327,7 @@ list *get_list_parts(FILE *file){
                         strcpy(partial_list->value[partial_list->number_of_list_key_values-1].value, get_string(file,c));
                         
                         c = fgetc(file);
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                         assert(c != EOF);
 
                         if(c == ']'){
@@ -332,7 +342,7 @@ list *get_list_parts(FILE *file){
                          partial_list->value[partial_list->number_of_list_key_values-1].value = (json*) get_json_parts(file);
                         
                         c = fgetc(file);
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                     }
                     else if( c == '-' || (c >= '0' && c <= '9')){
                         parsed_number *number = (parsed_number*) malloc(sizeof(parsed_number));
@@ -368,7 +378,7 @@ list *get_list_parts(FILE *file){
                         }
 
                         c = fgetc(file);
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                         assert(c != EOF);
 
                         if(c == ']'){
@@ -414,7 +424,7 @@ list *get_list_parts(FILE *file){
                             }
                         }
 
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                         assert(c != EOF);
 
                         if(c == ']'){
@@ -429,7 +439,7 @@ list *get_list_parts(FILE *file){
                         partial_list->value[partial_list->number_of_list_key_values-1].value = (list*) get_list_parts(file);
                         
                         c = fgetc(file);
-                        while(c == ' ' || c == '\t' || c == '\n')c = fgetc(file);
+                        while(c == ' ' || c == '\t' || c == '\n' || c == '\r')c = fgetc(file);
                     }
                 }while(c == ',');
             }
@@ -485,48 +495,66 @@ parsed_number *get_number(FILE *file, char c){
 }
 
 //Procedures
-void add_tabs(unsigned n){
+void add_tabs(int n){
     for(size_t i = 0 ; i < n ; i++){
         putc('\t',stdout);
     }
 }
 
-void print_json(const json *json_parsed, unsigned level){
+void print_json(const json *json_parsed, int level){
     size_t i = 0;
-    //add_tabs(level);
+    // puts("");
+    // add_tabs(level);
     printf("{\n");
     for(i = 0 ; i < json_parsed->number_of_json_key_values ; i++){
+        if(json_parsed->json_key_values[i].key == NULL){
+            add_tabs(level);printf(RED_COLOR"null"WHITE_COLOR);
+            continue;
+        }
         switch(json_parsed->json_key_values[i].value.type){
-            case null : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : "RED_COLOR"null"WHITE_COLOR",\n", json_parsed->json_key_values[i].key);break;
-            case string : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : "YELLOW_COLOR"\"%s\""WHITE_COLOR",\n", json_parsed->json_key_values[i].key, json_parsed->json_key_values[i].value.value);break;
-            case integer : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : "GREEN_COLOR"%d"WHITE_COLOR",\n", json_parsed->json_key_values[i].key, *(long*)json_parsed->json_key_values[i].value.value);break;
-            case decimal : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : "GREEN_COLOR"%f"WHITE_COLOR",\n", json_parsed->json_key_values[i].key, *(double*)json_parsed->json_key_values[i].value.value);break;
-            case boolean : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : \033[0;31m%s\033[00m,\n", json_parsed->json_key_values[i].key, *((bool*)json_parsed->json_key_values[i].value.value)?GREEN_COLOR"true":RED_COLOR"false");break;
-            case jsonList : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : ",json_parsed->json_key_values[i].key);print_list(json_parsed->json_key_values[i].value.value, level+1);break;
-            case jsonObj : add_tabs(level);printf("\t"BLEU_COLOR"\"%s\""WHITE_COLOR" : ",json_parsed->json_key_values[i].key);print_json(json_parsed->json_key_values[i].value.value, level+1);break;
+            case null : add_tabs(level+1);printf(BLEU_COLOR"\"%s\""WHITE_COLOR" : "RED_COLOR"null"WHITE_COLOR, json_parsed->json_key_values[i].key);break;
+            case string : add_tabs(level+1);printf(BLEU_COLOR"\"%s\""WHITE_COLOR" : "YELLOW_COLOR"\"%s\""WHITE_COLOR, json_parsed->json_key_values[i].key, json_parsed->json_key_values[i].value.value);break;
+            case integer : add_tabs(level+1);printf(BLEU_COLOR"\"%s\""WHITE_COLOR" : "GREEN_COLOR"%d"WHITE_COLOR, json_parsed->json_key_values[i].key, *(long*)json_parsed->json_key_values[i].value.value);break;
+            case decimal : add_tabs(level+1);printf(BLEU_COLOR"\"%s\""WHITE_COLOR" : "GREEN_COLOR"%f"WHITE_COLOR, json_parsed->json_key_values[i].key, *(double*)json_parsed->json_key_values[i].value.value);break;
+            case boolean : add_tabs(level+1);printf(BLEU_COLOR"\"%s\""WHITE_COLOR" : %s", json_parsed->json_key_values[i].key, *((bool*)json_parsed->json_key_values[i].value.value)?GREEN_COLOR"true"WHITE_COLOR:RED_COLOR"false"WHITE_COLOR);break;
+            case jsonList : add_tabs(level+1);printf(BLEU_COLOR"\"%s\""WHITE_COLOR" : ",json_parsed->json_key_values[i].key);print_list(json_parsed->json_key_values[i].value.value, level+1);break;
+            case jsonObj : add_tabs(level+1);printf(BLEU_COLOR"\"%s\""WHITE_COLOR" : ",json_parsed->json_key_values[i].key);print_json(json_parsed->json_key_values[i].value.value, level+1);break;
             default : printf("......Printing error......");break;
+        }
+        if(i < json_parsed->number_of_json_key_values-1){
+            puts(",");
+        }
+        else{
+            puts("");
         }
     }
     add_tabs(level);
-    printf("},\n");
+    printf("}");
 }
 
-void print_list(const list *list_parsed, unsigned level){
+void print_list(const list *list_parsed, int level){
     size_t i = 0;
-    //add_tabs(level);
+    // puts("");
+    // add_tabs(level);
     printf("[\n");
     for(i = 0 ; i < list_parsed->number_of_list_key_values ; i++){
         switch(list_parsed->value[i].type){
-            case null : add_tabs(level);printf("\t"RED_COLOR"null"WHITE_COLOR",\n");break;
-            case string : add_tabs(level);printf("\t"YELLOW_COLOR"\"%s\""WHITE_COLOR",\n", list_parsed->value[i].value);break;
-            case integer : add_tabs(level);printf("\t"GREEN_COLOR"%d"WHITE_COLOR",\n", *(long*)list_parsed->value[i].value);break;
-            case decimal : add_tabs(level);printf("\t"GREEN_COLOR"%f"WHITE_COLOR",\n", *(double*)list_parsed->value[i].value);break;
-            case boolean : add_tabs(level);printf("\t%s,\n", *((bool*)list_parsed->value[i].value)?GREEN_COLOR"true":RED_COLOR"false");break;
-            case jsonList : add_tabs(level);print_list(list_parsed->value[i].value, level+1);break;
-            case jsonObj : add_tabs(level);print_json(list_parsed->value[i].value, level+1);break;
+            case null : add_tabs(level+1);printf(RED_COLOR"null"WHITE_COLOR);break;
+            case string : add_tabs(level+1);printf(YELLOW_COLOR"\"%s\""WHITE_COLOR, list_parsed->value[i].value);break;
+            case integer : add_tabs(level+1);printf(GREEN_COLOR"%d"WHITE_COLOR, *(long*)list_parsed->value[i].value);break;
+            case decimal : add_tabs(level+1);printf(GREEN_COLOR"%f"WHITE_COLOR, *(double*)list_parsed->value[i].value);break;
+            case boolean : add_tabs(level+1);printf("%s", *((bool*)list_parsed->value[i].value)?GREEN_COLOR"true"WHITE_COLOR:RED_COLOR"false"WHITE_COLOR);break;
+            case jsonList : add_tabs(level+1);print_list(list_parsed->value[i].value, level+1);break;
+            case jsonObj : add_tabs(level+1);print_json(list_parsed->value[i].value, level+1);break;
             default : printf("......Printing error......");break;
+        }
+        if(i < list_parsed->number_of_list_key_values-1){
+            puts(",");
+        }
+        else{
+            puts("");
         }
     }
     add_tabs(level);
-    printf("],\n");
+    printf("]");
 }
